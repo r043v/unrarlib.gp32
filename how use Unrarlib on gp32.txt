@@ -1,0 +1,70 @@
+
+how use unrarlib on Gp32
+
+
+first thing, please make sure you have read the license (license.txt)
+the license must be in the same archive as this file.
+
+the license said you to use unrarlib with the unrarlib license, or under the gpl
+i put this 2 license in the license directory of the archive.
+
+
+second thing, unrarlib use the gamepark sdk, due to Mirko sdk wasn't work on ads
+
+third thing, unrarlib use an error function to return ... error msg
+this error function is an pointer to a void function who get a 'const char *' as argument.
+you must affect this function.
+
+the original unrarlib work with memory OR disk, here it's work with the twice.
+if you want load a file from memory (converted in .h or load from smc) you must create a memory_file structure,
+it regroup, pointer to data, data size and an offset who are the actual pos in data.
+to make it easy, i write a function who create and return a memory file stuct, from a file onto disk or in memory
+	memory_file * loadMemoryFile(char * path, ulong fsize=0) ;
+	
+	memory_file * mfile ;	// create a pointer to a memory file struct
+	mfile = loadMemoryFile("gp:\\myrar.rar") ;				// load the rar from disk into a memory_file
+	mfile = loadMemoryFile(&nameOftheRARfileInAnHeaderFile, rarFileSize) ;	// load the rar from an .h
+
+/*   list rar containing files		***/
+
+	/* list file rar who's into memory */
+	ArchiveList_struct *List = NULL ;				// declare a list
+	memory_file * theRar = loadMemoryFile("gp:\\myrar.rar") ;	// create and load a memory file
+	int fileNumber = urarlib_list(theRar, List);			// list the rar !
+	
+	/* list file rar who's onto disk */
+	ArchiveList_struct *List = NULL ;			// declare a list
+	int fileNumber = urarlib_list("gp:\\myrar.rar", List);	// list the rar !
+
+	// how work list ?
+	
+	ArchiveList_struct *List = NULL, *lst ;
+	int fileNumber = urarlib_list("gp:\\myrar.rar", List);
+
+	lst = List ;
+	lst->item.name ;	// contain first file path (path in the rar, the fileName)
+	lst = lst->next   ;	// now lst point on the second file
+	lst->item.name ;	// the second file path
+	....
+
+	and urarlib_freelist(List); to ...... free the list Oo
+
+/*   get a file from the rar !	***/
+
+ 	char	*path = "falldown.fxe" ;	// path of the file we want uncompress from the rar
+ 	char	*data_ptr = NULL	;	// a pointer where we'll can found our uncompressed file
+	ulong	  data_size	;	// a var where will be stored size of uncompressed file
+
+	yep = urarlib_get(data_ptr, &data_size, path,"gp:\\hey.rar","password") ;			// load from disk
+	yep = urarlib_get(data_ptr, &data_size, path,myPointerToAMemoryFileStruct,"password") ;	// load from memory
+	
+	if yep == 1 the file was loaded successfully.
+
+
+
+so .. that's all ^^
+
+hope this lib will be usefull :)
+good dev !
+
+-rov
